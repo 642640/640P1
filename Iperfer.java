@@ -33,13 +33,13 @@ public class Iperfer {
             OutputStream output = socket.getOutputStream();
 
             double byteSent = 0;
-
+			
             //send bytes for certain amount of time
             long t= System.currentTimeMillis();
             long end = t + time * 1000;
             while(System.currentTimeMillis() < end) {
-                output.write(0);
-                byteSent++;
+                output.write(new byte[1000]);
+                byteSent+=1000;
             }
             String msg = "sent=";
             double rate = byteSent * 8;
@@ -86,10 +86,10 @@ public class Iperfer {
             InputStream input = socket.getInputStream();
             //start time
             long start = System.currentTimeMillis();
-            byte[] zero = new byte[1];
+            byte[] zero = new byte[1000];
             double byteReceived = 0;
             while (input.read(zero) != -1) {
-                byteReceived++;
+                byteReceived+=1000;
             }
             //end time
             long finish = System.currentTimeMillis();
