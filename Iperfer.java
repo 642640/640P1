@@ -160,6 +160,8 @@ public class Iperfer {
             }
             long endTime = System.currentTimeMillis();
 
+            socket.close();
+            serverSocket.close();
             double timeInMs = (double)(endTime - startTime) / 1000;
             double received = (double)totalBytesRead / 1000;
             double rate = (double)(totalBytesRead * 8) / 1000 / 1000 / timeInMs;
