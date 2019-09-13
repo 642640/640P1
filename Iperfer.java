@@ -106,7 +106,6 @@ public class Iperfer {
             else
                 msg += byteReceived + " B";
             msg += " rate=";
-            System.out.println(timeElapsed);
             // rate = rate / (double)(timeElapsed / 1000);
             rate = rate / ((double)timeElapsed / 1000);
             if (rate >= 1000 )
