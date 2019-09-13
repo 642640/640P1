@@ -2,6 +2,11 @@ import java.net.Socket;
 import java.net.ServerSocket;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.DataOutputStream;
+import java.io.PrintWriter;
 
 public class Iperfer {
     public static int checkParamsLength(String[] args) {
@@ -117,15 +122,19 @@ public class Iperfer {
         try {
             Socket socket = new Socket(hostname, port);
             OutputStream socketOutputStream = socket.getOutputStream();
+            PrintWriter writer = new PrintWriter(new DataOutputStream(socketOutputStream), true);
             byte[] emptyBuffer = new byte[1000];
+            String emptyString = new String(emptyBuffer);
             long totalBytes = 0;
 
             // calculate the end time
             long endTime = System.currentTimeMillis() + (1000 * time);
 
             while(System.currentTimeMillis() < endTime) {
-                // send out 1000 bytes
-                socketOutputStream.write(emptyBuffer, 0, 1000);
+                // send out 1000 bytes string
+                writer.print(emptyString);
+                // flush writer
+                writer.flush();
                 // keep track bytes
                 totalBytes += 1000;
             }
@@ -147,19 +156,23 @@ public class Iperfer {
         // creates a server socket
         try {
             ServerSocket serverSocket = new ServerSocket(port);
-            Socket socket = serverSocket.accept();
-            InputStream inputStream = socket.getInputStream();
-            byte[] buffer = new byte[1000];
+            char[] buffer = new char[1000];
             long totalBytesRead = 0;
             long currBytesRead = 0;
+            // wait for socket connection
+            Socket socket = serverSocket.accept();
+            // grab input stream
+            InputStream inputStream = socket.getInputStream();
+            // create a buffered reader.
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
-            long startTime = System.currentTimeMillis();
             // start timing
-            while((currBytesRead = inputStream.read(buffer, 0, 1000)) != -1) {
+            long startTime = System.currentTimeMillis();
+            while((currBytesRead = reader.read(buffer, 0, 1000)) != -1) {
                 totalBytesRead += currBytesRead;
             }
             long endTime = System.currentTimeMillis();
-
+            // close socket and calculate rate
             socket.close();
             serverSocket.close();
             double timeInMs = (double)(endTime - startTime) / 1000;
