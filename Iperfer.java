@@ -88,8 +88,9 @@ public class Iperfer {
             long start = System.currentTimeMillis();
             byte[] zero = new byte[1000];
             double byteReceived = 0;
-            while (input.read(zero) != -1) {
-                byteReceived+=1000;
+            int tmp = -1;
+            while ((tmp = input.read(zero,0,1000)) != -1) {
+                byteReceived+=tmp;
             }
             //end time
             long finish = System.currentTimeMillis();
@@ -105,7 +106,9 @@ public class Iperfer {
             else
                 msg += byteReceived + " B";
             msg += " rate=";
-            rate = rate / (timeElapsed / 1000);
+            System.out.println(timeElapsed);
+            // rate = rate / (double)(timeElapsed / 1000);
+            rate = rate / ((double)timeElapsed / 1000);
             if (rate >= 1000 )
                 if (rate >= 1000000)
                     msg += rate / 1000000 + " MBbps";
