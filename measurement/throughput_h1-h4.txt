@@ -1,6 +1,3 @@
-root@mininet-vm:~/p1# java Iperfer -s -p 3333
-received=79495.0 KB rate=17.991908789996323 Mbps
-
-root@mininet-vm:~/p1# java Iperfer -c -h 10.0.0.1 -p 3333 -t 30
-sent=79495.0 KB  rate=21.198666666666668 Mbps
+received=81121.0 KB rate=18.84124956451051 Mbps
+sent=81121.0 KB  rate=21.632266666666666 Mbps
 
