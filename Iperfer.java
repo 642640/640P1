@@ -134,7 +134,7 @@ public class Iperfer {
             double sent = (double)totalBytes / 1000;
             double rate = (double)(totalBytes * 8) / (1000 * 1000) / time;
             socket.close();
-            System.out.println("sent=" + sent + " KB " + " rate=" + rate + " Mbps");
+            System.out.println("sent=" + (int)sent + " KB " + " rate=" + String.format("%.3f",rate)+ " Mbps");
         } catch(Exception e) {
             System.out.println(e.getMessage());
             System.exit(0);
@@ -166,7 +166,7 @@ public class Iperfer {
             double received = (double)totalBytesRead / 1000;
             double rate = (double)(totalBytesRead * 8) / 1000 / 1000 / timeInMs;
 
-            System.out.println("received=" + received + " KB"+ " rate=" + rate + " Mbps");
+            System.out.println("received=" + (int)received + " KB"+ " rate=" + String.format("%.3f",rate) + " Mbps");
         } catch(Exception e) {
             System.out.println(e.getMessage());
             System.exit(0);
