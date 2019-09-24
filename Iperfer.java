@@ -12,18 +12,18 @@ public class Iperfer {
         //java Iperfer -c -h <server hostname> -p <server port> -t <time>
 
         if (args[1].compareTo("-h") != 0
-        || args[3].compareTo("-p") != 0
-        || args[5].compareTo("-t") != 0
-        || args.length > 7 ){
+                || args[3].compareTo("-p") != 0
+                || args[5].compareTo("-t") != 0
+                || args.length > 7 ){
             error("Error: invalid arguments\n");
             return;
-        }
+                }
         //port number requirements
         if (Integer.parseInt(args[4]) < 1024
-        || Integer.parseInt(args[4]) > 65535 ){
+                || Integer.parseInt(args[4]) > 65535 ){
             error("Error: port number must be in the range 1024 to 65535");
             return;
-        }
+                }
 
         int port = Integer.parseInt(args[4]);
         int time = Integer.parseInt(args[6]);
@@ -33,7 +33,7 @@ public class Iperfer {
             OutputStream output = socket.getOutputStream();
 
             double byteSent = 0;
-			
+
             //send bytes for certain amount of time
             long t= System.currentTimeMillis();
             long end = t + time * 1000;
@@ -44,21 +44,19 @@ public class Iperfer {
             String msg = "sent=";
             double rate = byteSent * 8;
             if (byteSent >= 1000 )
-                if (byteSent >= 1000000)
-                    msg += byteSent / 1000000 + " MB";
-                else
-                    msg += byteSent / 1000 + " KB";
+                msg += (int)(byteSent / 1000) + " KB";
             else
-                msg += byteSent + " B";
+                msg += (int)byteSent + " B";
             msg += " rate=";
             rate = rate / time;
             if (rate >= 1000 )
                 if (rate >= 1000000)
-                    msg += rate / 1000000 + " MBbps";
+                    msg += String.format("%.3f",rate / 1000000) + " MBbps";
                 else
-                    msg += rate / 1000 + " KBps";
+                    msg += String.format("%.3f",rate / 1000) + " KBps";
             else
-                msg += rate + " Bps";
+                msg +=String.format("%.3f", rate )+ " Bps";
+
             System.out.println(msg);
             output.close();
             socket.close();
@@ -77,7 +75,7 @@ public class Iperfer {
                 || Integer.parseInt(args[2]) > 65535 ){
             error("Error: port number must be in the range 1024 to 65535");
             return;
-        }
+                }
         try {
             int port = Integer.parseInt(args[2]);
             ServerSocket server = new ServerSocket(port);
@@ -99,22 +97,20 @@ public class Iperfer {
             String msg = "received=";
             double rate = byteReceived * 8;
             if (byteReceived >= 1000 )
-                if (byteReceived >= 1000000)
-                    msg += byteReceived / 1000000 + " MB";
-                else
-                    msg += byteReceived / 1000 + " KB";
+                msg += (int)(byteReceived / 1000) + " KB";
             else
-                msg += byteReceived + " B";
+                msg += (int)(byteReceived) + " B";
             msg += " rate=";
             // rate = rate / (double)(timeElapsed / 1000);
             rate = rate / ((double)timeElapsed / 1000);
             if (rate >= 1000 )
                 if (rate >= 1000000)
-                    msg += rate / 1000000 + " MBbps";
+                    msg += String.format("%.3f",rate / 1000000) + " MBbps";
                 else
-                    msg += rate / 1000 + " KBps";
+                    msg += String.format("%.3f",rate / 1000) + " KBps";
             else
-                msg += rate + " Bps";
+                msg += String.format("%.3f",rate) + " Bps";
+
             System.out.println(msg);
             input.close();
             socket.close();
@@ -134,12 +130,12 @@ public class Iperfer {
                 || args[0].charAt(0) != '-') {
             error("Error: invalid arguments");
             return;
-        }
+                }
         switch(args[0].charAt(1)){
             case 's' : server(args);
-                        break;
+                       break;
             case 'c' : client(args);
-                        break;
+                       break;
             default : error("Error: invalid arguments");
         }
 
