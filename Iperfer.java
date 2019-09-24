@@ -2,8 +2,11 @@ import java.net.Socket;
 import java.net.ServerSocket;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 
 public class Iperfer {
+    private static DecimalFormat df = new DecimalFormat("0.000");
+
     public static int checkParamsLength(String[] args) {
         if(args.length == 7) {
             return 0;
@@ -134,7 +137,7 @@ public class Iperfer {
             double sent = (double)totalBytes / 1000;
             double rate = (double)(totalBytes * 8) / (1000 * 1000) / time;
             socket.close();
-            System.out.println("sent=" + sent + " KB " + " rate=" + rate + " Mbps");
+            System.out.println("sent=" + df.format(sent) + " KB " + " rate=" + df.format(rate) + " Mbps");
         } catch(Exception e) {
             System.out.println(e.getMessage());
             System.exit(0);
@@ -166,7 +169,7 @@ public class Iperfer {
             double received = (double)totalBytesRead / 1000;
             double rate = (double)(totalBytesRead * 8) / 1000 / 1000 / timeInMs;
 
-            System.out.println("received=" + received + " KB"+ " rate=" + rate + " Mbps");
+            System.out.println("received=" + df.format(received) + " KB"+ " rate=" + df.format(rate) + " Mbps");
         } catch(Exception e) {
             System.out.println(e.getMessage());
             System.exit(0);
