@@ -1,144 +1,193 @@
-import java.io.IOException;
+import java.net.Socket;
+import java.net.ServerSocket;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.text.DecimalFormat;
 
 public class Iperfer {
+    private static DecimalFormat df = new DecimalFormat();
 
-    private static void client(String[] args ){
+    public static int checkParamsLength(String[] args) {
+        if(args.length == 7) {
+            return 0;
+        } else if(args.length == 3) {
+            return 1;
+        }
 
-        //basic command line requirements
-        //java Iperfer -c -h <server hostname> -p <server port> -t <time>
+        System.out.println("Error: invalid arguments");
+        System.exit(0);
 
-        if (args[1].compareTo("-h") != 0
-                || args[3].compareTo("-p") != 0
-                || args[5].compareTo("-t") != 0
-                || args.length > 7 ){
-            error("Error: invalid arguments\n");
-            return;
-                }
-        //port number requirements
-        if (Integer.parseInt(args[4]) < 1024
-                || Integer.parseInt(args[4]) > 65535 ){
-            error("Error: port number must be in the range 1024 to 65535");
-            return;
-                }
+        return -1;
+    }
 
-        int port = Integer.parseInt(args[4]);
-        int time = Integer.parseInt(args[6]);
-        try {
-            //create socket
-            Socket socket = new Socket(args[2], port);
-            OutputStream output = socket.getOutputStream();
-
-            double byteSent = 0;
-
-            //send bytes for certain amount of time
-            long t= System.currentTimeMillis();
-            long end = t + time * 1000;
-            while(System.currentTimeMillis() < end) {
-                output.write(new byte[1000]);
-                byteSent+=1000;
+    public static void validateDashParams(String[] args, String[] flags) {
+        for(int i = 1, j = 0; i < args.length; i += 2, j++) {
+            if(!args[i].equals(flags[j])) {
+                System.out.println("Error: invalid arguments");
+                System.exit(0);
             }
-            String msg = "sent=";
-            double rate = byteSent * 8;
-            if (byteSent >= 1000 )
-                msg += (int)(byteSent / 1000) + " KB";
-            else
-                msg += (int)byteSent + " B";
-            msg += " rate=";
-            rate = rate / time;
-            if (rate >= 1000 )
-                if (rate >= 1000000)
-                    msg += String.format("%.3f",rate / 1000000) + " MBbps";
-                else
-                    msg += String.format("%.3f",rate / 1000) + " KBps";
-            else
-                msg +=String.format("%.3f", rate )+ " Bps";
-
-            System.out.println(msg);
-            output.close();
-            socket.close();
-        } catch (Exception e){
-            error("Exception Captured " + "\n" + e.getMessage());
-            return;
         }
     }
-    private static void server(String[] args ){
-        if (args[1].compareTo("-p") != 0 || args.length > 7) {
-            error("Error: invalid arguments\n");
-            return;
-        }
-        //port number requirements
-        if (Integer.parseInt(args[2]) < 1024
-                || Integer.parseInt(args[2]) > 65535 ){
-            error("Error: port number must be in the range 1024 to 65535");
-            return;
-                }
+
+    public static void checkPortRange(String sPort) {
         try {
-            int port = Integer.parseInt(args[2]);
-            ServerSocket server = new ServerSocket(port);
-
-            Socket socket = server.accept();
-            InputStream input = socket.getInputStream();
-            //start time
-            long start = System.currentTimeMillis();
-            byte[] zero = new byte[1000];
-            double byteReceived = 0;
-            int tmp = -1;
-            while ((tmp = input.read(zero,0,1000)) != -1) {
-                byteReceived+=tmp;
+            int iPort = Integer.parseInt(sPort);
+            // check correct port range
+            if(iPort < 1024 || iPort > 65535) {
+                System.out.println("Error: port number must be in the range 1024 to 65535");
+                System.exit(0);
             }
-            //end time
-            long finish = System.currentTimeMillis();
-            long timeElapsed = finish - start;
+        } catch(NumberFormatException ex) {
+            System.out.println("Error: invalid arguments");
+            System.exit(0);
+        }
+    }
 
-            String msg = "received=";
-            double rate = byteReceived * 8;
-            if (byteReceived >= 1000 )
-                msg += (int)(byteReceived / 1000) + " KB";
-            else
-                msg += (int)(byteReceived) + " B";
-            msg += " rate=";
-            // rate = rate / (double)(timeElapsed / 1000);
-            rate = rate / ((double)timeElapsed / 1000);
-            if (rate >= 1000 )
-                if (rate >= 1000000)
-                    msg += String.format("%.3f",rate / 1000000) + " MBbps";
-                else
-                    msg += String.format("%.3f",rate / 1000) + " KBps";
-            else
-                msg += String.format("%.3f",rate) + " Bps";
+    public static void checkTimeParam(String sTime) {
+        try {
+            int iTime = Integer.parseInt(sTime);
+        } catch(NumberFormatException ex) {
+            System.out.println("Error: invalid arguments");
+            System.exit(0);
+        }
+    }
 
-            System.out.println(msg);
-            input.close();
+    public static void validateClientModeParams(String[] args) {
+        String[] flags = {"-h", "-p", "-t"};
+
+        validateDashParams(args, flags);
+        checkPortRange(args[4]);
+        checkTimeParam(args[6]);
+    }
+
+    public static void validateServerModeParams(String[] args) {
+        String[] flags = {"-p"};
+
+        validateDashParams(args, flags);
+        checkPortRange(args[2]);
+    }
+
+    public static void validateParams(int mode, String[] args) {
+        if(mode == 0) {
+            validateClientModeParams(args);
+        } else if(mode == 1) {
+            validateServerModeParams(args);
+        }
+    }
+
+    public static Object[] parseClientModeParams(String[] args) {
+        Object[] results = {
+            0,  // mode
+            args[2], // hostname
+            Integer.parseInt(args[4]), // port
+            Integer.parseInt(args[6]) // time
+        };
+
+        return results;
+    }
+
+    public static Object[] parseServerModeParams(String[] args) {
+        Object[] results = {
+            1, // mode
+            Integer.parseInt(args[2]) // port
+        };
+
+        return results;
+    }
+
+    public static Object[] parseParams(String[] args) {
+        int mode = -1;
+        Object[] params = null;
+
+        // check param length
+        mode = checkParamsLength(args);
+        // validate parameters
+        validateParams(mode, args);
+        // parase parameters
+        if(mode == 0) {
+            params = parseClientModeParams(args);
+        } else if(mode == 1) {
+            params = parseServerModeParams(args);
+        }
+
+        return params;
+    }
+
+    public static void startClient(Object[] params) {
+        String hostname = (String)params[1];
+        int port = (Integer)params[2];
+        int time = (Integer)params[3];
+        try {
+            Socket socket = new Socket(hostname, port);
+            OutputStream socketOutputStream = socket.getOutputStream();
+            byte[] emptyBuffer = new byte[1000];
+            long totalBytes = 0;
+
+            // calculate the end time
+            long endTime = System.currentTimeMillis() + (1000 * time);
+
+            while(System.currentTimeMillis() < endTime) {
+                // send out 1000 bytes
+                socketOutputStream.write(emptyBuffer, 0, 1000);
+                // keep track bytes
+                totalBytes += 1000;
+            }
+
+            // close socket
+            double sent = (double)totalBytes / 1000;
+            double rate = (double)(totalBytes * 8) / (1000 * 1000) / time;
             socket.close();
-            server.close();
-        } catch (IOException e){
-            error("IOException");
-            return;
+            System.out.println("sent=" + (int)sent + " KB " + " rate=" + String.format("%.3f",rate)+ " Mbps");
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+            System.exit(0);
         }
     }
-    private static void error(String msg){
-        System.out.println(msg);
-        return;
-    }
-    public static void main(String[] args){
 
-        if (args.length < 3
-                || args[0].charAt(0) != '-') {
-            error("Error: invalid arguments");
-            return;
-                }
-        switch(args[0].charAt(1)){
-            case 's' : server(args);
-                       break;
-            case 'c' : client(args);
-                       break;
-            default : error("Error: invalid arguments");
+    public static void startServer(Object[] params) {
+        int port = (Integer)params[1];
+
+        // creates a server socket
+        try {
+            ServerSocket serverSocket = new ServerSocket(port);
+            Socket socket = serverSocket.accept();
+            InputStream inputStream = socket.getInputStream();
+            byte[] buffer = new byte[1000];
+            long totalBytesRead = 0;
+            long currBytesRead = 0;
+
+            long startTime = System.currentTimeMillis();
+            // start timing
+            while((currBytesRead = inputStream.read(buffer, 0, 1000)) != -1) {
+                totalBytesRead += currBytesRead;
+            }
+            long endTime = System.currentTimeMillis();
+
+            socket.close();
+            serverSocket.close();
+            double timeInMs = (double)(endTime - startTime) / 1000;
+            double received = (double)totalBytesRead / 1000;
+            double rate = (double)(totalBytesRead * 8) / 1000 / 1000 / timeInMs;
+
+            System.out.println("received=" + (int)received + " KB"+ " rate=" + String.format("%.3f",rate) + " Mbps");
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+            System.exit(0);
         }
+    }
 
+    public static void startJob(Object[] params) {
+        int mode = (Integer)params[0];
+        if(mode == 0) {
+            startClient(params);
+        } else if(mode == 1) {
+            startServer(params);
+        }
+    }
 
+    public static void main(String[] args) {
+        Object[] params = parseParams(args);
+        df.setMaximumFractionDigits(3);
+        startJob(params);
     }
 }
