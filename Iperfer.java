@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import java.text.DecimalFormat;
 
 public class Iperfer {
-    private static DecimalFormat df = new DecimalFormat("0.000");
+    private static DecimalFormat df = new DecimalFormat();
 
     public static int checkParamsLength(String[] args) {
         if(args.length == 7) {
@@ -187,6 +187,7 @@ public class Iperfer {
 
     public static void main(String[] args) {
         Object[] params = parseParams(args);
+        df.setMaximumFractionDigits(3);
         startJob(params);
     }
 }
